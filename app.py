@@ -1,5 +1,5 @@
 import streamlit as st
-st.set_page_config(page_title="🚨 Hate Speech Tweet Detection", layout="centered")
+st.set_page_config(page_title="🚨 Racist Sexist Tweet Detection", layout="centered")
 
 import numpy as np
 import pickle
@@ -98,7 +98,7 @@ def predict_tweet(tweet):
     padded_seq = pad_sequences(sequence, maxlen=MAX_LEN, padding='post', truncating='post')
     try:
         prediction = model.predict(padded_seq)[0][0]
-        label = "The tweet is a hate speech." if prediction > 0.5 else "The tweet is not a hate speech."
+        label = "The tweet is a racist sexist speech." if prediction > 0.5 else "The tweet is not a racist sexist speech."
     except Exception as e:
         label = "Error"
     return label
@@ -109,9 +109,9 @@ if st.button("Predict"):
         st.warning("Please enter a tweet.")
     else:
         label = predict_tweet(tweet_input)
-        if label == "The tweet is a hate speech.":
+        if label == "The tweet is a racist sexist speech.":
             st.error(f"🔴 Prediction: **{label}**")
-        elif label == "The tweet is not a hate speech.":
+        elif label == "The tweet is not a racist sexist speech.":
             st.success(f"🟢 Prediction: **{label}**")
         else:
             st.warning(f"⚠️ Prediction: **{label}**")
