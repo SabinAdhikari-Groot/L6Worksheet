@@ -1,9 +1,13 @@
 import streamlit as st
+st.set_page_config(page_title="🚨 Racism Detection", layout="centered")
+
 import numpy as np
 import pickle
 import json
 import re
+import os
 import nltk
+nltk.data.path.append(os.path.join(os.path.dirname(__file__), "nltk_data"))
 from nltk.corpus import stopwords, wordnet
 from nltk.stem import WordNetLemmatizer, PorterStemmer
 from tensorflow.keras.models import load_model
@@ -16,7 +20,6 @@ nltk.download('punkt')
 
 
 # Streamlit UI
-st.set_page_config(page_title="🚨 Racism Detection", layout="centered")
 st.title("🚨 Racism Detection in Tweets")
 st.markdown("Enter a tweet below to check if it contains racist language.")
 
