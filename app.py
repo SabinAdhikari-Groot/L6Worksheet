@@ -8,11 +8,10 @@ import re
 import os
 import nltk
 
-# Ensure NLTK resources are downloaded
+# Set up NLTK data directory to ensure downloads work on Streamlit Cloud
 nltk_data_dir = os.path.expanduser("~/nltk_data")
 if not os.path.exists(nltk_data_dir):
     os.makedirs(nltk_data_dir)
-
 nltk.data.path.append(nltk_data_dir)
 
 # Download required NLTK datasets if not already present
@@ -21,18 +20,11 @@ nltk.download('punkt_tab', download_dir=nltk_data_dir, quiet=True)
 nltk.download('stopwords', download_dir=nltk_data_dir, quiet=True)
 nltk.download('wordnet', download_dir=nltk_data_dir, quiet=True)
 
-from nltk.corpus import stopwords, wordnet
+from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer, PorterStemmer
 from nltk.tokenize import word_tokenize
-
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
-
-# Download NLTK resources if not already done
-nltk.download('stopwords')
-nltk.download('wordnet')
-nltk.download('punkt')
-
 
 # Streamlit UI
 st.title("🚨 Racism Detection in Tweets")
@@ -41,7 +33,7 @@ st.markdown("Enter a tweet below to check if it contains racist language.")
 tweet_input = st.text_area("Tweet Input:", height=150, placeholder="Type or paste a tweet here...")
 
 # Load model, tokenizer, and config
-@st.cache(allow_output_mutation=True)
+@st.cache(allow_output_mutation=True, suppress_st_warning=True)
 def load_assets():
     model = load_model("my_model.h5")
     with open("tokenizer.pkl", "rb") as f:
@@ -121,4 +113,6 @@ if st.button("Predict"):
         label, score = predict_tweet(tweet_input)
         st.success(f"Prediction: **{label}**")
         st.info(f"Confidence Score: **{score:.4f}**")
-        st.progress(score if label == "Racist" else 1 - score)
+        confidence = score if label == "Racist" else 1 - score
+        confidence = max(0.0, min(1.0, confidence))  # Clamp value between 0 and 1
+        st.progress(confidence)
