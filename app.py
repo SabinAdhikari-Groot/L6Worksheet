@@ -8,20 +8,20 @@ import re
 import os
 import nltk
 
-# Set up NLTK data directory to ensure downloads work on Streamlit Cloud
+# Set up NLTK data directory
 nltk_data_dir = os.path.expanduser("~/nltk_data")
 if not os.path.exists(nltk_data_dir):
     os.makedirs(nltk_data_dir)
 nltk.data.path.append(nltk_data_dir)
 
-# Download required NLTK datasets if not already present
+# Download required NLTK datasets
 nltk.download('punkt', download_dir=nltk_data_dir, quiet=True)
 nltk.download('punkt_tab', download_dir=nltk_data_dir, quiet=True)
 nltk.download('stopwords', download_dir=nltk_data_dir, quiet=True)
 nltk.download('wordnet', download_dir=nltk_data_dir, quiet=True)
 
 from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer, PorterStemmer
+from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
@@ -32,7 +32,7 @@ st.markdown("Enter a tweet below to check if it contains racist language.")
 
 tweet_input = st.text_area("Tweet Input:", height=150, placeholder="Type or paste a tweet here...")
 
-# Load model, tokenizer, and config
+# Load model and tokenizer
 @st.cache_resource
 def load_assets():
     model = load_model("my_model.h5")
@@ -76,13 +76,10 @@ def text_cleaning_pipeline(text, rule="lemmatize"):
     def remove_stopwords(tokens):
         return [token for token in tokens if token not in stop_words]
 
-    # Lemmatization or Stemming
+    # Lemmatization
     def lemmatize(tokens):
         lemmatizer = WordNetLemmatizer()
         return [lemmatizer.lemmatize(token) for token in tokens]
-    def stem(tokens):
-        stemmer = PorterStemmer()
-        return [stemmer.stem(token) for token in tokens]
 
     # Apply cleaning steps
     text = lower_order(text)
@@ -91,10 +88,7 @@ def text_cleaning_pipeline(text, rule="lemmatize"):
     text = remove_unwanted_characters(text)
     tokens = tokenize(text)
     tokens = remove_stopwords(tokens)
-    if rule == "lemmatize":
-        tokens = lemmatize(tokens)
-    elif rule == "stem":
-        tokens = stem(tokens)
+    tokens = lemmatize(tokens)
     return " ".join(tokens)
 
 # Prediction Function
@@ -102,34 +96,22 @@ def predict_tweet(tweet):
     cleaned_text = text_cleaning_pipeline(tweet)
     sequence = tokenizer.texts_to_sequences([cleaned_text])
     padded_seq = pad_sequences(sequence, maxlen=MAX_LEN, padding='post', truncating='post')
-    prediction = model.predict(padded_seq)[0][0]
-    label = "Racist" if prediction > 0.5 else "Not Racist"
-    return label, prediction
+    try:
+        prediction = model.predict(padded_seq)[0][0]
+        label = "Racist" if prediction > 0.5 else "Not Racist"
+    except Exception as e:
+        label = "Error"
+    return label
 
+# Button Logic
 if st.button("Predict"):
     if not tweet_input.strip():
         st.warning("Please enter a tweet.")
     else:
-        try:
-            label, score = predict_tweet(tweet_input)
-
-            # Validate and sanitize score
-            if not isinstance(score, (int, float)) or np.isnan(score) or np.isinf(score):
-                st.warning("⚠️ Model returned an invalid confidence score. Using default fallback confidence of 0.5")
-                score = 0.5
-            else:
-                score = float(score)
-                if score < 0 or score > 1:
-                    st.warning("⚠️ Model returned out-of-range confidence score. Clamping between 0 and 1.")
-                    score = max(0.0, min(1.0, score))
-
-            confidence = score if label == "Racist" else 1 - score
-            confidence = max(0.0, min(1.0, confidence))
-
-            st.success(f"Prediction: **{label}**")
-            st.info(f"Confidence Score: **{score:.4f}**")
-            st.progress(confidence)
-
-        except Exception as e:
-            st.error("An error occurred during prediction. Please try again.")
-            st.exception(e)  # Optional: show detailed error (remove in production)
+        label = predict_tweet(tweet_input)
+        if label == "Racist":
+            st.error(f"🔴 Prediction: **{label}**")
+        elif label == "Not Racist":
+            st.success(f"🟢 Prediction: **{label}**")
+        else:
+            st.warning(f"⚠️ Prediction: **{label}**")
