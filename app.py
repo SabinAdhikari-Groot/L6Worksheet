@@ -16,7 +16,7 @@ nltk.download('wordnet')
 # Load model, tokenizer, and config
 @st.cache(allow_output_mutation=True)
 def load_assets():
-    model = load_model("racism_lstm_model.h5")
+    model = load_model("my_model.h5")
     with open("tokenizer.pkl", "rb") as f:
         tokenizer = pickle.load(f)
     with open("config.json", "r") as f:
