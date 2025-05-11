@@ -33,7 +33,7 @@ st.markdown("Enter a tweet below to check if it contains racist language.")
 tweet_input = st.text_area("Tweet Input:", height=150, placeholder="Type or paste a tweet here...")
 
 # Load model, tokenizer, and config
-@st.cache(allow_output_mutation=True, suppress_st_warning=True)
+@st.cache_resource
 def load_assets():
     model = load_model("my_model.h5")
     with open("tokenizer.pkl", "rb") as f:
@@ -114,12 +114,14 @@ if st.button("Predict"):
             label, score = predict_tweet(tweet_input)
 
             # Validate and sanitize score
-            if not isinstance(score, (int, float)) or np.isnan(score):
-                raise ValueError("Model returned invalid confidence score.")
-
-            score = float(score)
-            if score < 0 or score > 1:
-                score = max(0.0, min(1.0, score))
+            if not isinstance(score, (int, float)) or np.isnan(score) or np.isinf(score):
+                st.warning("⚠️ Model returned an invalid confidence score. Using default fallback confidence of 0.5")
+                score = 0.5
+            else:
+                score = float(score)
+                if score < 0 or score > 1:
+                    st.warning("⚠️ Model returned out-of-range confidence score. Clamping between 0 and 1.")
+                    score = max(0.0, min(1.0, score))
 
             confidence = score if label == "Racist" else 1 - score
             confidence = max(0.0, min(1.0, confidence))
