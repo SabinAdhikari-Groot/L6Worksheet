@@ -7,9 +7,24 @@ import json
 import re
 import os
 import nltk
-nltk.data.path.append(os.path.join(os.path.dirname(__file__), "nltk_data"))
+
+# Ensure NLTK resources are downloaded
+nltk_data_dir = os.path.expanduser("~/nltk_data")
+if not os.path.exists(nltk_data_dir):
+    os.makedirs(nltk_data_dir)
+
+nltk.data.path.append(nltk_data_dir)
+
+# Download required NLTK datasets if not already present
+nltk.download('punkt', download_dir=nltk_data_dir, quiet=True)
+nltk.download('punkt_tab', download_dir=nltk_data_dir, quiet=True)
+nltk.download('stopwords', download_dir=nltk_data_dir, quiet=True)
+nltk.download('wordnet', download_dir=nltk_data_dir, quiet=True)
+
 from nltk.corpus import stopwords, wordnet
 from nltk.stem import WordNetLemmatizer, PorterStemmer
+from nltk.tokenize import word_tokenize
+
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
