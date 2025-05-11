@@ -13,6 +13,13 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 nltk.download('stopwords')
 nltk.download('wordnet')
 
+# Streamlit UI
+st.set_page_config(page_title="🚨 Racism Detection", layout="centered")
+st.title("🚨 Racism Detection in Tweets")
+st.markdown("Enter a tweet below to check if it contains racist language.")
+
+tweet_input = st.text_area("Tweet Input:", height=150, placeholder="Type or paste a tweet here...")
+
 # Load model, tokenizer, and config
 @st.cache(allow_output_mutation=True)
 def load_assets():
@@ -86,13 +93,6 @@ def predict_tweet(tweet):
     prediction = model.predict(padded_seq)[0][0]
     label = "Racist" if prediction > 0.5 else "Not Racist"
     return label, prediction
-
-# Streamlit UI
-st.set_page_config(page_title="🚨 Racism Detection", layout="centered")
-st.title("🚨 Racism Detection in Tweets")
-st.markdown("Enter a tweet below to check if it contains racist language.")
-
-tweet_input = st.text_area("Tweet Input:", height=150, placeholder="Type or paste a tweet here...")
 
 if st.button("Predict"):
     if not tweet_input.strip():
