@@ -27,8 +27,8 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 # Streamlit UI
-st.title("🚨 Racism Detection in Tweets")
-st.markdown("Enter a tweet below to check if it contains racist language.")
+st.title("🚨 Racist Sexist Tweet Detection")
+st.markdown("Enter a tweet below to check if it contains racis sexist language.")
 
 tweet_input = st.text_area("Tweet Input:", height=150, placeholder="Type or paste a tweet here...")
 
