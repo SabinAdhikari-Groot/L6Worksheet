@@ -110,9 +110,24 @@ if st.button("Predict"):
     if not tweet_input.strip():
         st.warning("Please enter a tweet.")
     else:
-        label, score = predict_tweet(tweet_input)
-        st.success(f"Prediction: **{label}**")
-        st.info(f"Confidence Score: **{score:.4f}**")
-        confidence = score if label == "Racist" else 1 - score
-        confidence = max(0.0, min(1.0, confidence))  # Clamp value between 0 and 1
-        st.progress(confidence)
+        try:
+            label, score = predict_tweet(tweet_input)
+
+            # Validate and sanitize score
+            if not isinstance(score, (int, float)) or np.isnan(score):
+                raise ValueError("Model returned invalid confidence score.")
+
+            score = float(score)
+            if score < 0 or score > 1:
+                score = max(0.0, min(1.0, score))
+
+            confidence = score if label == "Racist" else 1 - score
+            confidence = max(0.0, min(1.0, confidence))
+
+            st.success(f"Prediction: **{label}**")
+            st.info(f"Confidence Score: **{score:.4f}**")
+            st.progress(confidence)
+
+        except Exception as e:
+            st.error("An error occurred during prediction. Please try again.")
+            st.exception(e)  # Optional: show detailed error (remove in production)
