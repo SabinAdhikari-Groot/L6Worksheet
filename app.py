@@ -109,9 +109,9 @@ if st.button("Predict"):
         st.warning("Please enter a tweet.")
     else:
         label = predict_tweet(tweet_input)
-        if label == "Racist":
+        if label == "The tweet is a hate speech.":
             st.error(f"🔴 Prediction: **{label}**")
-        elif label == "Not Racist":
+        elif label == "The tweet is not a hate speech.":
             st.success(f"🟢 Prediction: **{label}**")
         else:
             st.warning(f"⚠️ Prediction: **{label}**")
