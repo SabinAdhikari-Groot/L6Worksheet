@@ -12,6 +12,8 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 # Download NLTK resources if not already done
 nltk.download('stopwords')
 nltk.download('wordnet')
+nltk.download('punkt')
+
 
 # Streamlit UI
 st.set_page_config(page_title="🚨 Racism Detection", layout="centered")
